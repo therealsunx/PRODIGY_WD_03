@@ -3,21 +3,20 @@ import { useState } from 'react';
 
 const Board = ({ setPlaying }) => {
 
-  const [board, setBoard] = useState(Array.from({ length: 3 }, () => Array.from({ length: 3 }, () => '')));
+  const [board, setBoard] = useState(Array.from({ length: 3 }, () => Array.from({ length: 3 }, () => null)));
   const [turnflag, setTurnflag] = useState(false);
   const [AI, setAI] = useState(false);
   const [finalState, setFinalState] = useState('');
 
-  const getWinner = () => {
-    console.log(board);
+  const getWinner = (b) => {
     for (let i = 0; i < 3; i++) {
-      if (board[i][0] === board[i][1] && board[i][0] === board[i][2] && board[i][0]) return board[i][0];
+      if (b[i][0] === b[i][1] && b[i][0] === b[i][2] && b[i][0]) return b[i][0];
     }
     for (let i = 0; i < 3; i++) {
-      if (board[0][i] === board[1][i] && board[0][i] === board[2][i] && board[0][i]) return board[0][i];
+      if (b[0][i] === b[1][i] && b[0][i] === b[2][i] && b[0][i]) return b[0][i];
     }
-    if (board[0][0] === board[1][1] && board[0][0] === board[2][2]) return board[1][1];
-    if (board[0][2] === board[1][1] && board[0][2] === board[2][0]) return board[1][1];
+    if (b[0][0] === b[1][1] && b[0][0] === b[2][2]) return b[1][1];
+    if (b[0][2] === b[1][1] && b[0][2] === b[2][0]) return b[1][1];
     return null;
   };
 
@@ -36,33 +35,81 @@ const Board = ({ setPlaying }) => {
     setTurnflag(false);
   }
 
-  const botMakesMove = () => {
-    //get a square
-    let r = 0;
-    let c = 0;
+  const minimax = (b, d, isMaxPl) => {
+    const winner = getWinner(b);
+    if (winner) return winner === 'X' ? 1 : -1;
+    else if (boardFilled()) return 0;
 
-    handleClick(r, c);
+    if (isMaxPl) {
+      let bs = -Infinity;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (!b[i][j]) {
+            b[i][j] = 'X';
+            const s = minimax(b, d + 1, false);
+            b[i][j] = null;
+            bs = Math.max(s, bs);
+          }
+        }
+      }
+      return bs;
+    } else {
+      let bs = Infinity;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (!b[i][j]) {
+            b[i][j] = 'O';
+            const s = minimax(b, d + 1, true);
+            b[i][j] = null;
+            bs = Math.min(s, bs);
+          }
+        }
+      }
+      return bs;
+    }
   }
 
-  const handleClick = (i, j) => {
+  const getBestMove = (b) => {
+    let bs = Infinity;
+    let bm = { x: -1, y: -1 };
+
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (!b[i][j]) {
+          b[i][j] = 'O';
+          const s = minimax(b, 0, true);
+          b[i][j] = null;
+          if (s < bs) {
+            bs = s;
+            bm = { x: i, y: j };
+          }
+        }
+      }
+    }
+    return bm;
+  }
+
+  const handleClick = (i, j, flag = false) => {
     if (finalState) return;
     if (board[i][j]) return;
 
     let _c = [...board];
-    _c[i][j] = turnflag ? 'O' : 'X';
+    _c[i][j] = flag ? 'O' : 'X';
     setBoard(_c);
 
-    let _w = getWinner();
+    let _w = getWinner(_c);
     if (_w) {
       setFinalState(_w === 'X' ? "Winner : A" : "Winner : B");
     } else if (boardFilled()) {
       setFinalState('Draw');
-    }
-    else {
+    } else if (!AI) {
       setTurnflag(!turnflag);
-      if (AI && turnflag) botMakesMove();
+    } else if (!flag) {
+      let bm = getBestMove(_c);
+      handleClick(bm.x, bm.y, true);
     }
   }
+
   return (
 
     <div className='flex flex-col items-center md:flex-row gap-12'>
