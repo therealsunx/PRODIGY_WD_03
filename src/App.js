@@ -116,7 +116,7 @@ const Board = ({ setPlaying }) => {
       <div className='flex md:flex-col gap-12 items-center'>
         <p className='text-2xl md:text-4xl font-bold bg-[#444] px-12 py-4 rounded-2xl'>{finalState ? finalState : (turnflag ? "Turn : B" : "Turn : A")}</p>
         <div className='flex gap-4 text-2xl md:text-4xl items-center text-center font-bold'>
-          <label>AI</label>
+          <label>BOT</label>
           <button className={`w-6 h-6 rounded-full shadow-2xl bg-[#0f0] ${AI ? '' : 'opacity-40'}`} onClick={() => setAI(!AI)}></button>
         </div>
       </div>
