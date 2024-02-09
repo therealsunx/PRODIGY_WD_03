@@ -94,7 +94,7 @@ const Board = ({ setPlaying }) => {
     if (board[i][j]) return;
 
     let _c = [...board];
-    _c[i][j] = flag ? 'O' : 'X';
+    _c[i][j] = flag || turnflag ? 'O' : 'X';
     setBoard(_c);
 
     let _w = getWinner(_c);
@@ -103,7 +103,7 @@ const Board = ({ setPlaying }) => {
     } else if (boardFilled()) {
       setFinalState('Draw');
     } else if (!AI) {
-      setTurnflag(!turnflag);
+      setTurnflag(p=>!p);
     } else if (!flag) {
       let bm = getBestMove(_c);
       handleClick(bm.x, bm.y, true);
